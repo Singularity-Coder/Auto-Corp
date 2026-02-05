@@ -1,0 +1,7 @@
+{
+  "name": "Auto-Corp Business Builder",
+  "description": "An AI-powered orchestration engine for automatically constructing and managing your business structure, providing step-by-step legal guidance, document generation, and obligation mapping.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
