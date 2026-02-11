@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import VerticalStepper from './components/VerticalStepper';
 import FleetDashboard from './components/FleetDashboard';
 import EntityDetail from './components/EntityDetail';
+import ChatInterface from './components/ChatInterface';
 import { BusinessEntity, EntityStatus } from './types';
 
 const INITIAL_DUMMY_DATA: BusinessEntity[] = [
@@ -59,6 +60,8 @@ const App: React.FC = () => {
   const [view, setView] = useState<'LIST' | 'CREATE' | 'DETAIL'>('LIST');
   const [activeEntity, setActiveEntity] = useState<BusinessEntity>(INITIAL_ENTITY('new-node'));
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
 
   const handleEntityAction = (id: string, action: 'SLEEP' | 'KILL' | 'ACTIVATE') => {
     setFleet(prev => prev.map(e => {
@@ -85,7 +88,9 @@ const App: React.FC = () => {
   const startCreation = () => {
     const newId = `node-${Math.floor(Math.random() * 900) + 100}`;
     setActiveEntity(INITIAL_ENTITY(newId));
+    setCurrentStep(1);
     setView('CREATE');
+    setIsChatOpen(true);
   };
 
   const openDetail = (id: string) => {
@@ -97,12 +102,22 @@ const App: React.FC = () => {
     setFleet(prev => prev.map(e => e.id === updated.id ? updated : e));
   };
 
+  const getActiveContext = () => {
+    if (view === 'DETAIL' && selectedEntityId) return fleet.find(e => e.id === selectedEntityId) || null;
+    if (view === 'CREATE') return activeEntity;
+    return null;
+  };
+
+  const context = getActiveContext();
+
   const renderContent = () => {
     if (view === 'CREATE') {
       return (
         <VerticalStepper 
           entity={activeEntity} 
           setEntity={setActiveEntity} 
+          currentStep={currentStep}
+          setCurrentStep={setCurrentStep}
           onComplete={deployToFleet}
           onBack={() => setView('LIST')}
         />
@@ -161,22 +176,33 @@ const App: React.FC = () => {
     }
   };
 
-  const getActiveContext = () => {
-    if (view === 'DETAIL' && selectedEntityId) return fleet.find(e => e.id === selectedEntityId);
-    if (view === 'CREATE') return activeEntity;
-    return fleet[0];
-  };
-
-  const context = getActiveContext();
-
   return (
     <Layout 
       activeTab={activeTab} 
       setActiveTab={(t) => { setActiveTab(t); setView('LIST'); }} 
       entityName={context?.name || ''} 
       entityStatus={context?.status || EntityStatus.DRAFT}
+      isChatOpen={isChatOpen}
+      onToggleChat={() => setIsChatOpen(!isChatOpen)}
     >
       {renderContent()}
+      <ChatInterface 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+        activeEntity={context}
+        currentStep={view === 'CREATE' ? currentStep : null}
+        onUpdateStep={(step) => setCurrentStep(step)}
+        onUpdateEntity={(updates) => {
+          if (view !== 'CREATE') {
+            const newId = `node-${Math.floor(Math.random() * 900) + 100}`;
+            setActiveEntity({ ...INITIAL_ENTITY(newId), ...updates });
+            setCurrentStep(1);
+            setView('CREATE');
+          } else {
+            setActiveEntity(prev => ({ ...prev, ...updates }));
+          }
+        } }
+      />
     </Layout>
   );
 };

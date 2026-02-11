@@ -7,9 +7,19 @@ interface LayoutProps {
   setActiveTab: (tab: string) => void;
   entityName: string;
   entityStatus: string;
+  isChatOpen: boolean;
+  onToggleChat: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, entityName, entityStatus }) => {
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  activeTab, 
+  setActiveTab, 
+  entityName, 
+  entityStatus,
+  isChatOpen,
+  onToggleChat
+}) => {
   const tabs = [
     { id: 'dashboard', label: 'Entity Fleet', icon: '🏦' },
     { id: 'settings', label: 'Global Config', icon: '⚙️' },
@@ -54,15 +64,13 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, enti
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tighter">{entityStatus || 'IDLE'}</span>
               </div>
             </div>
-            <div className="mt-6 pt-6 border-t border-slate-200/50">
-              <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2">
-                <span>Network Integrity</span>
-                <span className="text-emerald-500">98%</span>
-              </div>
-              <div className="h-1 bg-slate-200 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 w-[98%]"></div>
-              </div>
-            </div>
+            
+            <button 
+              onClick={onToggleChat}
+              className="w-full mt-6 py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all"
+            >
+              {isChatOpen ? 'Close Orchestrator' : 'Summon Orchestrator'}
+            </button>
           </div>
         </div>
       </aside>
@@ -75,12 +83,26 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, enti
             <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold">A</div>
             <span className="font-bold text-sm tracking-tight">Auto-Corp</span>
           </div>
+          <button onClick={onToggleChat} className="p-2 bg-slate-50 rounded-lg">🤖</button>
         </header>
 
-        <main className="flex-1 overflow-y-auto bg-[#FDFDFF]">
+        <main className={`flex-1 overflow-y-auto bg-[#FDFDFF] transition-all duration-500 ${isChatOpen ? 'lg:mr-[400px]' : ''}`}>
           {children}
         </main>
       </div>
+
+      {/* Collapsed Chat Trigger (Floating) */}
+      {!isChatOpen && (
+        <button 
+          onClick={onToggleChat}
+          className="fixed bottom-10 right-10 w-16 h-16 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all z-40 group"
+        >
+          🤖
+          <span className="absolute right-full mr-4 bg-slate-900 text-white text-[10px] font-bold px-3 py-2 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none uppercase tracking-widest">
+            Need Guidance?
+          </span>
+        </button>
+      )}
     </div>
   );
 };

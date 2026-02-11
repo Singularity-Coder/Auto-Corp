@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CORP_STEPS } from '../constants';
 import { BusinessEntity, EntityStatus, VCRecommendation, EntityAdvice } from '../types';
 import { getVCMatch, getEntityAdvice, getInfraAdvice } from '../geminiService';
@@ -7,23 +7,28 @@ import { getVCMatch, getEntityAdvice, getInfraAdvice } from '../geminiService';
 interface Props {
   entity: BusinessEntity;
   setEntity: (e: BusinessEntity) => void;
+  currentStep: number;
+  setCurrentStep: (step: number) => void;
   onComplete: () => void;
   onBack: () => void;
 }
 
-const VerticalStepper: React.FC<Props> = ({ entity, setEntity, onComplete, onBack }) => {
-  const [currentStep, setCurrentStep] = useState(1);
+const VerticalStepper: React.FC<Props> = ({ entity, setEntity, currentStep, setCurrentStep, onComplete, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [vcMatches, setVcMatches] = useState<VCRecommendation[]>([]);
   const [advice, setAdvice] = useState<EntityAdvice | null>(null);
   const [infra, setInfra] = useState<any[]>([]);
 
+  // Track progress on the entity object
+  useEffect(() => {
+    if (currentStep > entity.stepsCompleted) {
+      setEntity({ ...entity, stepsCompleted: currentStep });
+    }
+  }, [currentStep]);
+
   const next = () => {
     const nextStep = Math.min(currentStep + 1, CORP_STEPS.length);
     setCurrentStep(nextStep);
-    if (currentStep >= entity.stepsCompleted) {
-      setEntity({ ...entity, stepsCompleted: currentStep });
-    }
   };
 
   const prev = () => setCurrentStep(prev => Math.max(prev - 1, 1));
@@ -37,7 +42,7 @@ const VerticalStepper: React.FC<Props> = ({ entity, setEntity, onComplete, onBac
       next();
     } catch (e) {
       console.error(e);
-      next(); // Fallback to proceed even if AI fails
+      next(); 
     } finally {
       setLoading(false);
     }
@@ -105,7 +110,6 @@ const VerticalStepper: React.FC<Props> = ({ entity, setEntity, onComplete, onBac
               )}
 
               <div className="flex items-start">
-                {/* Made step icon clickable to allow jumping between phases */}
                 <div 
                   onClick={() => setCurrentStep(step.id)}
                   className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-xl z-10 transition-all duration-300 cursor-pointer ${
