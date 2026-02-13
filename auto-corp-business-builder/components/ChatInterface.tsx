@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 import { BusinessEntity } from '../types';
+import { Bot, X, Send, Cpu } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'model';
@@ -23,18 +24,9 @@ const updateEntityFunctionDeclaration: FunctionDeclaration = {
     type: Type.OBJECT,
     description: 'Updates the corporate formation details for the current entity.',
     properties: {
-      name: {
-        type: Type.STRING,
-        description: 'The name of the business.',
-      },
-      industry: {
-        type: Type.STRING,
-        description: 'The market sector.',
-      },
-      jurisdiction: {
-        type: Type.STRING,
-        description: 'The legal jurisdiction.',
-      },
+      name: { type: Type.STRING, description: 'The name of the business.' },
+      industry: { type: Type.STRING, description: 'The market sector.' },
+      jurisdiction: { type: Type.STRING, description: 'The legal jurisdiction.' },
     },
   },
 };
@@ -45,10 +37,7 @@ const moveToStepFunctionDeclaration: FunctionDeclaration = {
     type: Type.OBJECT,
     description: 'Advances the construction stepper to the next logical phase.',
     properties: {
-      stepId: {
-        type: Type.NUMBER,
-        description: 'The ID of the phase to move to (1-5).',
-      },
+      stepId: { type: Type.NUMBER, description: 'The ID of the phase to move to (1-5).' },
     },
     required: ['stepId'],
   },
@@ -84,15 +73,7 @@ const ChatInterface: React.FC<Props> = ({ activeEntity, currentStep, isOpen, onC
            Name: ${activeEntity.name || 'NOT SET'}
            Industry: ${activeEntity.industry || 'NOT SET'}
            Jurisdiction: ${activeEntity.jurisdiction || 'Delaware, USA'}
-           CURRENT PHASE: ${currentStep || 1}
-
-           PHASE DEFINITIONS:
-           Step 1 (Ideation): Need Name, Industry, Jurisdiction. 
-           Step 2 (Formalization): Need user confirmation to "auto-file" or "generate documents".
-           Step 3 (Funding): Need to discuss capital goals or run a VC match scan.
-           Step 4 (Infra): Need to select banking/cloud stacks.
-           Step 5 (Governance): Final review and deployment.
-           `
+           CURRENT PHASE: ${currentStep || 1}`
         : "CONTEXT: Initializing first entity creation.";
 
       const response = await ai.models.generateContent({
@@ -102,14 +83,10 @@ const ChatInterface: React.FC<Props> = ({ activeEntity, currentStep, isOpen, onC
         ],
         config: {
           systemInstruction: `You are the Auto-Corp AI Orchestrator. You MUST follow a strict linear progression through the 5 phases of business construction.
-
           PROTOCOL:
           1. PAUSE & ASK: Do not move to the next phase until the requirements of the current phase are satisfied.
-          2. STEP 1 (Ideation): You must have Name, Industry, and Jurisdiction. If any are missing, ask the user for them. When you have them, call 'updateEntityDetails' AND then ask the user if they are ready to proceed to Phase 2 (Formalization).
-          3. STEP 2 (Formalization): This step requires the user to agree to document generation. Once they say "Yes", "Go ahead", or "Continue", call 'moveToStep' with stepId: 2.
-          4. ADVANCING: Only call 'moveToStep' when the user confirms they are ready to move to the next section OR when the current section's data is fully captured.
-          5. ACKNOWLEDGMENT: Always acknowledge what you've updated or changed in the form.
-
+          2. STEP 1 (Ideation): Need Name, Industry, and Jurisdiction. When you have them, call 'updateEntityDetails' AND then ask the user if they are ready to proceed to Phase 2.
+          3. STEP 2 (Formalization): Requires user agreement to document generation. Once they confirm, call 'moveToStep' with stepId: 2.
           Current Goal: Help the user finish the current Phase (${currentStep || 1}).`,
           tools: [{ functionDeclarations: [updateEntityFunctionDeclaration, moveToStepFunctionDeclaration] }],
         }
@@ -119,27 +96,21 @@ const ChatInterface: React.FC<Props> = ({ activeEntity, currentStep, isOpen, onC
         let confirmationText = "";
         for (const call of response.functionCalls) {
           if (call.name === 'updateEntityDetails') {
-            const args = call.args as Partial<BusinessEntity>;
-            onUpdateEntity(args);
+            onUpdateEntity(call.args as Partial<BusinessEntity>);
             confirmationText += `System parameters updated. `;
           }
           if (call.name === 'moveToStep') {
-            const { stepId } = call.args as { stepId: number };
-            onUpdateStep(stepId);
-            confirmationText += `Initializing Phase ${stepId} protocols. `;
+            onUpdateStep((call.args as any).stepId);
+            confirmationText += `Transitioning to Phase ${(call.args as any).stepId}. `;
           }
         }
-        
-        // After function calls, get a follow-up response from the model or provide a default one
-        const aiText = response.text || (confirmationText + "How would you like to proceed?");
-        setMessages(prev => [...prev, { role: 'model', text: aiText }]);
+        setMessages(prev => [...prev, { role: 'model', text: response.text || (confirmationText + "How would you like to proceed?") }]);
       } else {
-        const aiText = response.text || "Orchestrator standing by for further data.";
-        setMessages(prev => [...prev, { role: 'model', text: aiText }]);
+        setMessages(prev => [...prev, { role: 'model', text: response.text || "Orchestrator standing by." }]);
       }
     } catch (error) {
       console.error("Chat Error:", error);
-      setMessages(prev => [...prev, { role: 'model', text: "Logic error in orchestration loop. Manual correction required." }]);
+      setMessages(prev => [...prev, { role: 'model', text: "Logic error in orchestration loop." }]);
     } finally {
       setIsTyping(false);
     }
@@ -151,81 +122,61 @@ const ChatInterface: React.FC<Props> = ({ activeEntity, currentStep, isOpen, onC
         isOpen ? 'w-[400px] translate-x-0' : 'w-0 translate-x-full'
       }`}
     >
-      <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-900 text-white shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-black">AI</div>
+      <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-900 text-white shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg"><Bot size={20} /></div>
           <div>
-            <h3 className="font-bold text-sm tracking-tight">Orchestrator Chat</h3>
-            <p className="text-[9px] text-blue-300 font-bold uppercase tracking-widest">Procedural Agent</p>
+            <h3 className="font-bold text-sm tracking-tight uppercase">Orchestrator</h3>
+            <p className="text-[9px] text-blue-300 font-black uppercase tracking-widest">Procedural Agent</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
-          <span className="text-xl">✕</span>
-        </button>
+        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors"><X size={20} /></button>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#FDFDFF] custom-scrollbar">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-8 bg-[#FDFDFF] custom-scrollbar">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div 
-              className={`max-w-[85%] p-4 text-sm leading-relaxed whitespace-pre-wrap ${
-                msg.role === 'user' 
-                  ? 'bg-blue-600 text-white rounded-2xl rounded-tr-none shadow-lg shadow-blue-100' 
-                  : 'bg-white border border-slate-100 text-slate-700 rounded-2xl rounded-tl-none shadow-sm'
-              }`}
-            >
+            <div className={`max-w-[85%] p-5 text-sm leading-relaxed whitespace-pre-wrap rounded-3xl ${
+                msg.role === 'user' ? 'bg-blue-600 text-white shadow-xl shadow-blue-100 rounded-tr-none' : 'bg-white border border-slate-100 text-slate-700 shadow-sm rounded-tl-none'
+            }`}>
               {msg.text}
             </div>
           </div>
         ))}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl rounded-tl-none">
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"></div>
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-              </div>
+            <div className="bg-slate-50 border border-slate-100 p-5 rounded-3xl rounded-tl-none">
+              <div className="flex gap-1.5"><div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"></div><div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:0.2s]"></div><div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:0.4s]"></div></div>
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-6 border-t border-slate-50 bg-white shrink-0">
+      <div className="p-8 border-t border-slate-50 bg-white shrink-0">
         <div className="relative">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder={`Control Phase ${currentStep || 1}...`}
-            className="w-full bg-slate-50 border-none rounded-2xl p-4 pr-12 text-sm font-medium focus:ring-2 focus:ring-blue-500 transition-all outline-none resize-none h-24"
+            className="w-full bg-slate-50 border-none rounded-3xl p-5 pr-14 text-sm font-bold focus:ring-2 focus:ring-blue-500 transition-all outline-none resize-none h-28"
           />
           <button 
             onClick={handleSend}
             disabled={!input.trim() || isTyping}
-            className="absolute right-3 bottom-3 w-8 h-8 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
+            className="absolute right-4 bottom-4 w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all disabled:opacity-30"
           >
-            ↑
+            <Send size={18} />
           </button>
         </div>
-        <div className="mt-4 flex items-center justify-between px-1">
-           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-             Creation Progress
+        <div className="mt-6 flex items-center justify-between px-1">
+           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+             <Cpu size={12} /> Creation Node
            </span>
-           <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
-             Step {currentStep || 1} / 5
-           </span>
+           <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Step {currentStep || 1} / 5</span>
         </div>
-        <div className="mt-2 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-           <div 
-             className="h-full bg-blue-600 transition-all duration-1000" 
-             style={{ width: `${(currentStep || 1) * 20}%` }}
-           ></div>
+        <div className="mt-3 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+           <div className="h-full bg-blue-600 transition-all duration-1000" style={{ width: `${(currentStep || 1) * 20}%` }}></div>
         </div>
       </div>
     </div>

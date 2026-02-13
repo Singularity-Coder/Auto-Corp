@@ -3,6 +3,21 @@ import React, { useState, useEffect } from 'react';
 import { CORP_STEPS } from '../constants';
 import { BusinessEntity, EntityStatus, VCRecommendation, EntityAdvice } from '../types';
 import { getVCMatch, getEntityAdvice, getInfraAdvice } from '../geminiService';
+import { 
+  ArrowLeft, 
+  Check, 
+  ChevronRight, 
+  Globe, 
+  Scale, 
+  DollarSign, 
+  Building2, 
+  Handshake,
+  Search,
+  Sparkles,
+  Zap,
+  LayoutGrid,
+  FileText
+} from 'lucide-react';
 
 interface Props {
   entity: BusinessEntity;
@@ -13,13 +28,20 @@ interface Props {
   onBack: () => void;
 }
 
+const stepIcons: Record<string, React.ReactNode> = {
+  'IDEATION': <Globe size={20} />,
+  'FORMALIZATION': <Scale size={20} />,
+  'FUNDING': <DollarSign size={20} />,
+  'INFRA': <Building2 size={20} />,
+  'GOVERNANCE': <Handshake size={20} />,
+};
+
 const VerticalStepper: React.FC<Props> = ({ entity, setEntity, currentStep, setCurrentStep, onComplete, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [vcMatches, setVcMatches] = useState<VCRecommendation[]>([]);
   const [advice, setAdvice] = useState<EntityAdvice | null>(null);
   const [infra, setInfra] = useState<any[]>([]);
 
-  // Track progress on the entity object
   useEffect(() => {
     if (currentStep > entity.stepsCompleted) {
       setEntity({ ...entity, stepsCompleted: currentStep });
@@ -88,9 +110,8 @@ const VerticalStepper: React.FC<Props> = ({ entity, setEntity, currentStep, setC
         <button 
           onClick={onBack}
           className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all active:scale-90"
-          title="Return to Fleet"
         >
-          ←
+          <ArrowLeft size={20} />
         </button>
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Entity Constructor</h2>
@@ -112,12 +133,12 @@ const VerticalStepper: React.FC<Props> = ({ entity, setEntity, currentStep, setC
               <div className="flex items-start">
                 <div 
                   onClick={() => setCurrentStep(step.id)}
-                  className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-xl z-10 transition-all duration-300 cursor-pointer ${
-                    isActive ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 scale-110 ring-4 ring-blue-50' : 
+                  className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center z-10 transition-all duration-300 cursor-pointer ${
+                    isActive ? 'bg-slate-900 text-white shadow-xl shadow-slate-200 scale-110 ring-4 ring-slate-50' : 
                     isCompleted ? 'bg-blue-100 text-blue-600' : 'bg-white border-2 border-slate-100 text-slate-300 hover:border-slate-300'
                   }`}
                 >
-                  {isCompleted ? '✓' : step.icon}
+                  {isCompleted ? <Check size={20} /> : stepIcons[step.component]}
                 </div>
 
                 <div className="ml-8 flex-1 pb-4">
@@ -134,25 +155,25 @@ const VerticalStepper: React.FC<Props> = ({ entity, setEntity, currentStep, setC
                   </header>
 
                   {isActive && (
-                    <div className="mt-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm p-8 animate-in fade-in slide-in-from-top-6 duration-500 ease-out overflow-hidden">
+                    <div className="mt-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm p-10 animate-in fade-in slide-in-from-top-6 duration-500 ease-out overflow-hidden">
                       {step.component === 'IDEATION' && (
-                        <div className="space-y-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Corp Name</label>
+                        <div className="space-y-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Corp Name</label>
                               <input 
                                 value={entity.name} 
                                 onChange={e => setEntity({...entity, name: e.target.value})}
-                                className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                                className="w-full bg-slate-50 border-none rounded-2xl p-5 text-sm font-bold focus:ring-2 focus:ring-blue-500 transition-all outline-none"
                                 placeholder="e.g. Nexus Forge"
                               />
                             </div>
-                            <div className="space-y-2">
-                              <label className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Jurisdiction</label>
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jurisdiction</label>
                               <select 
                                 value={entity.jurisdiction}
                                 onChange={e => setEntity({...entity, jurisdiction: e.target.value})}
-                                className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold outline-none cursor-pointer"
+                                className="w-full bg-slate-50 border-none rounded-2xl p-5 text-sm font-bold outline-none cursor-pointer appearance-none"
                               >
                                 <option>Delaware, USA</option>
                                 <option>Wyoming, USA</option>
@@ -162,161 +183,167 @@ const VerticalStepper: React.FC<Props> = ({ entity, setEntity, currentStep, setC
                               </select>
                             </div>
                           </div>
-                          <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Market Sector</label>
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Market Sector</label>
                             <input 
                               value={entity.industry}
                               onChange={e => setEntity({...entity, industry: e.target.value})}
-                              className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold outline-none"
+                              className="w-full bg-slate-50 border-none rounded-2xl p-5 text-sm font-bold outline-none"
                               placeholder="e.g. AI Infrastructure"
                             />
                           </div>
                           <button 
                             disabled={!entity.name || !entity.industry || loading}
                             onClick={handleIdeationSubmit}
-                            className="w-full py-4 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-2xl font-bold transition-all transform active:scale-[0.98]"
+                            className="w-full py-5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-2xl font-bold transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
                           >
+                            {loading ? <Sparkles size={18} className="animate-pulse" /> : <ChevronRight size={18} />}
                             {loading ? 'Analyzing Regulations...' : 'Initialize Identity'}
                           </button>
                         </div>
                       )}
 
                       {step.component === 'FORMALIZATION' && (
-                        <div className="space-y-6">
-                          <div className="p-5 bg-blue-50 rounded-3xl border border-blue-100 flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-xl">📋</div>
+                        <div className="space-y-8">
+                          <div className="p-6 bg-blue-50 rounded-[2rem] border border-blue-100 flex items-center gap-5">
+                            <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white"><Scale size={28} /></div>
                             <div>
-                              <h4 className="font-bold text-blue-900 text-sm">Target Entity: {advice?.recommendedEntity || 'LLC'}</h4>
+                              <h4 className="font-bold text-blue-900 text-base">Target Entity: {advice?.recommendedEntity || 'LLC'}</h4>
                               <p className="text-xs text-blue-600">Time to Operational: {advice?.timeToSpinUp || 'Instant'}</p>
                             </div>
                           </div>
                           
-                          <div className="space-y-3">
-                            <div className="p-4 bg-white border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-blue-200 transition-colors">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-xs">📄</div>
-                                <span className="text-xs font-semibold text-slate-700">Incorporation Documents</span>
+                          <div className="space-y-4">
+                            <div className="p-5 bg-white border border-slate-100 rounded-3xl flex items-center justify-between group hover:border-blue-200 transition-colors">
+                              <div className="flex items-center gap-4">
+                                {/* Fixed: Added FileText to imports */}
+                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400"><FileText size={18} /></div>
+                                <span className="text-sm font-bold text-slate-700">Incorporation Documents</span>
                               </div>
-                              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">READY</span>
+                              <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg uppercase">Generated</span>
                             </div>
-                            <div className="p-4 bg-white border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-blue-200 transition-colors">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-xs">🆔</div>
-                                <span className="text-xs font-semibold text-slate-700">Tax ID Application</span>
+                            <div className="p-5 bg-white border border-slate-100 rounded-3xl flex items-center justify-between group hover:border-blue-200 transition-colors">
+                              <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400"><Zap size={18} /></div>
+                                <span className="text-sm font-bold text-slate-700">Tax ID Auto-Filing</span>
                               </div>
-                              <button className="text-[10px] font-bold bg-slate-900 text-white px-3 py-1.5 rounded-lg">Auto-File</button>
+                              <button className="text-[10px] font-black bg-slate-900 text-white px-4 py-2 rounded-xl uppercase">Execute</button>
                             </div>
                           </div>
 
-                          <div className="flex gap-3 pt-4">
-                            <button onClick={prev} className="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 text-sm">Back</button>
-                            <button onClick={next} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-100">Establish Registry</button>
+                          <div className="flex gap-4 pt-6">
+                            <button onClick={prev} className="flex-1 py-5 bg-slate-50 rounded-2xl font-bold text-slate-500 text-sm">Back</button>
+                            <button onClick={next} className="flex-1 py-5 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-100">Establish Registry</button>
                           </div>
                         </div>
                       )}
 
                       {step.component === 'FUNDING' && (
-                        <div className="space-y-6">
-                          <header className="flex justify-between items-center">
-                            <h4 className="font-bold text-slate-800 text-sm">Venture Match Algorithm</h4>
+                        <div className="space-y-8">
+                          <header className="flex justify-between items-center px-2">
+                            <h4 className="font-bold text-slate-800 text-base">Venture Match Algorithm</h4>
                             <button 
                               onClick={handleFundingSearch}
-                              className="text-[10px] font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full hover:bg-blue-100"
+                              className="text-[10px] font-black bg-blue-50 text-blue-600 px-4 py-2 rounded-xl hover:bg-blue-100 uppercase"
                               disabled={loading}
                             >
+                              <Search size={14} className="inline mr-2" />
                               {loading ? 'Searching...' : 'Scan Market'}
                             </button>
                           </header>
 
-                          <div className="max-h-60 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                          <div className="max-h-72 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                             {vcMatches.length > 0 ? vcMatches.map((vc, idx) => (
-                              <div key={idx} className="p-5 border border-slate-100 rounded-3xl hover:border-blue-300 transition-all bg-slate-50/30">
-                                <div className="flex justify-between items-start mb-2">
+                              <div key={idx} className="p-6 border border-slate-100 rounded-[2rem] hover:border-blue-300 transition-all bg-slate-50/50">
+                                <div className="flex justify-between items-start mb-3">
                                   <h5 className="font-bold text-slate-900">{vc.name}</h5>
-                                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{vc.fitScore}%</span>
+                                  <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">{vc.fitScore}% FIT</span>
                                 </div>
-                                <p className="text-[11px] text-slate-500 font-medium">{vc.focus}</p>
+                                <p className="text-xs text-slate-500 font-medium leading-relaxed">{vc.focus}</p>
                               </div>
                             )) : (
-                              <div className="py-10 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-100">
-                                <p className="text-xs text-slate-400 font-medium">Find capital partners for your mission.</p>
+                              <div className="py-16 text-center bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
+                                <p className="text-sm text-slate-400 font-bold">Find capital partners for your mission.</p>
                               </div>
                             )}
                           </div>
 
-                          <div className="flex gap-3 pt-2">
-                            <button onClick={prev} className="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 text-sm">Back</button>
-                            <button onClick={next} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm">Configure Infra</button>
+                          <div className="flex gap-4 pt-4">
+                            <button onClick={prev} className="flex-1 py-5 bg-slate-50 rounded-2xl font-bold text-slate-500 text-sm">Back</button>
+                            <button onClick={next} className="flex-1 py-5 bg-blue-600 text-white rounded-2xl font-bold text-sm">Configure Infra</button>
                           </div>
                         </div>
                       )}
 
                       {step.component === 'INFRA' && (
-                        <div className="space-y-6">
-                           <div className="grid grid-cols-2 gap-4">
-                              <button onClick={handleInfraScan} className="p-5 bg-white border border-slate-200 rounded-3xl text-center hover:border-blue-500 transition-all">
-                                <div className="text-2xl mb-2">💸</div>
-                                <span className="text-xs font-bold block">Digital Banking</span>
-                                <span className="text-[10px] text-slate-400">Mercury / Relay</span>
+                        <div className="space-y-8">
+                           <div className="grid grid-cols-2 gap-6">
+                              <button onClick={handleInfraScan} className="p-8 bg-white border border-slate-100 rounded-[2.5rem] text-center hover:border-blue-500 transition-all group shadow-sm">
+                                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 mx-auto mb-4 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                  <Building2 size={24} />
+                                </div>
+                                <span className="text-sm font-black block text-slate-900 uppercase">Digital Banking</span>
+                                <span className="text-[10px] text-slate-400 font-bold mt-1 block">Mercury / Relay</span>
                               </button>
-                              <button onClick={handleInfraScan} className="p-5 bg-white border border-slate-200 rounded-3xl text-center hover:border-blue-500 transition-all">
-                                <div className="text-2xl mb-2">🌥️</div>
-                                <span className="text-xs font-bold block">Cloud Stack</span>
-                                <span className="text-[10px] text-slate-400">AWS / GCP / Vercel</span>
+                              <button onClick={handleInfraScan} className="p-8 bg-white border border-slate-100 rounded-[2.5rem] text-center hover:border-blue-500 transition-all group shadow-sm">
+                                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 mx-auto mb-4 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                  <LayoutGrid size={24} />
+                                </div>
+                                <span className="text-sm font-black block text-slate-900 uppercase">Cloud Stack</span>
+                                <span className="text-[10px] text-slate-400 font-bold mt-1 block">AWS / GCP / Vercel</span>
                               </button>
                            </div>
 
                            {infra.length > 0 && (
-                             <div className="space-y-2 animate-in slide-in-from-bottom-2 duration-300">
+                             <div className="space-y-3 animate-in slide-in-from-bottom-2 duration-300">
                                {infra.map((item, i) => (
-                                 <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                                 <div key={i} className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100">
                                    <div>
-                                     <p className="text-xs font-bold">{item.tool}</p>
-                                     <p className="text-[10px] text-slate-500">{item.benefit}</p>
+                                     <p className="text-sm font-black text-slate-900 uppercase">{item.tool}</p>
+                                     <p className="text-[10px] text-slate-500 font-bold">{item.benefit}</p>
                                    </div>
-                                   <button className="text-[10px] font-bold text-blue-600">Provision</button>
+                                   <button className="text-[10px] font-black text-blue-600 uppercase">Provision</button>
                                  </div>
                                ))}
                              </div>
                            )}
 
-                           <div className="flex gap-3 pt-4">
-                            <button onClick={prev} className="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 text-sm">Back</button>
-                            <button onClick={next} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm">Finalize Governance</button>
+                           <div className="flex gap-4 pt-6">
+                            <button onClick={prev} className="flex-1 py-5 bg-slate-50 rounded-2xl font-bold text-slate-500 text-sm">Back</button>
+                            <button onClick={next} className="flex-1 py-5 bg-blue-600 text-white rounded-2xl font-bold text-sm">Finalize Governance</button>
                           </div>
                         </div>
                       )}
 
                       {step.component === 'GOVERNANCE' && (
                         <div className="space-y-8">
-                          <div className="bg-slate-900 rounded-[2rem] p-8 text-white text-center">
-                            <span className="text-5xl block mb-6">🤝</span>
-                            <h4 className="text-xl font-bold mb-2">Registry Finalization</h4>
-                            <p className="text-xs text-slate-400 leading-relaxed mb-6">
-                              Transmitting your corporation details to the global regulatory mesh and notifying registered stakeholders.
+                          <div className="bg-slate-900 rounded-[3rem] p-12 text-white text-center shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-12 opacity-5"><Handshake size={120} /></div>
+                            <div className="w-20 h-20 bg-white/10 rounded-[2rem] flex items-center justify-center mx-auto mb-8">
+                              <Handshake size={32} />
+                            </div>
+                            <h4 className="text-2xl font-black mb-3 uppercase tracking-tight">Registry Finalization</h4>
+                            <p className="text-xs text-slate-400 leading-relaxed mb-8 max-w-sm mx-auto">
+                              Transmitting your corporation details to the global mesh. Once executed, legal personality is established.
                             </p>
-                            <div className="space-y-2 mb-8 text-left">
-                               <div className="flex items-center gap-3 text-[10px] text-slate-400">
+                            <div className="space-y-3 mb-10 text-left max-w-xs mx-auto">
+                               <div className="flex items-center gap-3 text-[10px] text-slate-400 font-black uppercase tracking-widest">
                                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                  Registry: Secretary of State Sync
+                                  Registry: Ready
                                </div>
-                               <div className="flex items-center gap-3 text-[10px] text-slate-400">
+                               <div className="flex items-center gap-3 text-[10px] text-slate-400 font-black uppercase tracking-widest">
                                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                  Compliance: KYC/AML Cleared
-                               </div>
-                               <div className="flex items-center gap-3 text-[10px] text-slate-400">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                  Treasury: Cold Vault Linked
+                                  Compliance: Cleared
                                </div>
                             </div>
                             <button 
                               onClick={finishDeployment}
-                              className="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold shadow-xl transition-all hover:bg-slate-100 active:scale-95"
+                              className="w-full py-5 bg-white text-slate-900 rounded-2xl font-bold shadow-xl transition-all hover:bg-slate-100 active:scale-95 uppercase text-xs tracking-widest"
                             >
                               Execute Deployment
                             </button>
                           </div>
-                          <button onClick={prev} className="w-full py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 text-sm">Back</button>
+                          <button onClick={prev} className="w-full py-5 bg-slate-50 rounded-2xl font-bold text-slate-500 text-sm">Back</button>
                         </div>
                       )}
                     </div>
