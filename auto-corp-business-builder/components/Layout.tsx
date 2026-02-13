@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, Settings, Bot, Building2 } from 'lucide-react';
+import { LayoutDashboard, Settings, Bot, Building2, ShoppingBag } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,6 +23,7 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const tabs = [
     { id: 'dashboard', label: 'Entity Fleet', icon: <LayoutDashboard size={20} /> },
+    { id: 'marketplace', label: 'Agent Marketplace', icon: <ShoppingBag size={20} /> },
     { id: 'settings', label: 'Global Config', icon: <Settings size={20} /> },
   ];
 

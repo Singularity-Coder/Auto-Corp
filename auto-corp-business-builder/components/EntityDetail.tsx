@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { BusinessEntity, EntityStatus, Agent, Standup, OvernightLog, ModelConfig, SessionEvent } from '../types';
-import { AGENTS_SEED, MODELS_SEED, STANDUPS_SEED, LOGS_SEED } from '../constants';
+import { MODELS_SEED, STANDUPS_SEED, LOGS_SEED } from '../constants';
 import { 
   ArrowLeft, 
   Activity, 
@@ -20,20 +20,21 @@ import {
   Target,
   ArrowUpRight,
   ArrowDownRight,
-  Code
+  Code,
+  Info
 } from 'lucide-react';
 
 interface Props {
   entity: BusinessEntity;
+  agents: Agent[];
   onAction: (id: string, action: 'SLEEP' | 'KILL' | 'ACTIVATE') => void;
   onUpdate: (updated: BusinessEntity) => void;
   onBack: () => void;
 }
 
-const EntityDetail: React.FC<Props> = ({ entity, onUpdate, onBack }) => {
+const EntityDetail: React.FC<Props> = ({ entity, agents, onUpdate, onBack }) => {
   const [activeTab, setActiveTab] = useState<'TASKS' | 'ORG' | 'STANDUP' | 'DOCS' | 'FINANCIALS'>('TASKS');
   const [logs] = useState<OvernightLog[]>(LOGS_SEED);
-  const [agents] = useState<Agent[]>(AGENTS_SEED);
   const [models] = useState<ModelConfig[]>(MODELS_SEED);
   const [standups] = useState<Standup[]>(STANDUPS_SEED);
   const [sessions] = useState<SessionEvent[]>([
@@ -49,6 +50,9 @@ const EntityDetail: React.FC<Props> = ({ entity, onUpdate, onBack }) => {
   const [selectedFile, setSelectedFile] = useState<string>('SOUL.md');
   const [editMode, setEditMode] = useState(false);
   const [tempObjective, setTempObjective] = useState(entity.objective || '');
+
+  // Filter agents for this specific entity
+  const entityAgents = agents.filter(a => a.assignedEntityId === entity.id);
 
   const tabs = [
     { id: 'TASKS', label: 'Monitor', icon: <Activity size={18} /> },
@@ -116,7 +120,7 @@ const EntityDetail: React.FC<Props> = ({ entity, onUpdate, onBack }) => {
             <div className="space-y-10 max-w-7xl mx-auto animate-in fade-in duration-500">
                <div className="grid grid-cols-4 gap-6">
                   {[
-                    { label: 'Total Agents', value: agents.length, icon: <Users size={16} />, color: 'text-slate-900' },
+                    { label: 'Total Agents', value: entityAgents.length, icon: <Users size={16} />, color: 'text-slate-900' },
                     { label: 'Active Sessions', value: '14', icon: <Activity size={16} />, color: 'text-blue-600' },
                     { label: 'Tokens Used', value: '1.2M', icon: <Zap size={16} />, color: 'text-amber-600' },
                     { label: 'Daily Cost', value: '$2.44', icon: <Activity size={16} />, color: 'text-emerald-600' }
@@ -224,7 +228,7 @@ const EntityDetail: React.FC<Props> = ({ entity, onUpdate, onBack }) => {
                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{dept} Cluster</h4>
                        </header>
                        <div className="space-y-4">
-                          {agents.filter(a => a.department === dept).map(agent => (
+                          {entityAgents.filter(a => a.department === dept).map(agent => (
                             <div key={agent.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-300 group">
                                <div className="flex justify-between items-start mb-4">
                                   <span className="text-[9px] font-black px-2 py-0.5 bg-slate-50 text-slate-400 rounded-lg">{agent.id}</span>
@@ -232,6 +236,14 @@ const EntityDetail: React.FC<Props> = ({ entity, onUpdate, onBack }) => {
                                </div>
                                <h5 className="font-bold text-slate-900 leading-tight">{agent.name}</h5>
                                <p className="text-[10px] text-blue-600 font-bold uppercase mt-1">{agent.role}</p>
+                               
+                               {agent.customInstructions && (
+                                 <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100 text-[9px] text-slate-500 italic flex items-start gap-2">
+                                    <Info size={10} className="shrink-0 mt-0.5 text-blue-400" />
+                                    <span className="line-clamp-2">"{agent.customInstructions}"</span>
+                                 </div>
+                               )}
+
                                <div className="mt-6 flex flex-wrap gap-1.5">
                                   {agent.modelTags.map(tag => (
                                     <span key={tag} className="text-[8px] font-black px-2 py-1 bg-slate-50 text-slate-400 rounded-lg border border-slate-100 uppercase">{tag}</span>
@@ -239,6 +251,11 @@ const EntityDetail: React.FC<Props> = ({ entity, onUpdate, onBack }) => {
                                </div>
                             </div>
                           ))}
+                          {entityAgents.filter(a => a.department === dept).length === 0 && (
+                            <div className="p-8 border-2 border-dashed border-slate-100 rounded-[2rem] text-center">
+                               <p className="text-[10px] font-bold text-slate-300 uppercase">No nodes in cluster</p>
+                            </div>
+                          )}
                        </div>
                     </div>
                   ))}

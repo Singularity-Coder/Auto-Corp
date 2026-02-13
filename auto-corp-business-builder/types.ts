@@ -50,6 +50,8 @@ export interface Agent {
   modelTags: string[];
   chiefId?: string;
   responsibilities: string[];
+  customInstructions?: string;
+  assignedEntityId?: string;
 }
 
 export interface SessionEvent {

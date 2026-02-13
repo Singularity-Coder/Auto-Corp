@@ -5,7 +5,9 @@ import VerticalStepper from './components/VerticalStepper';
 import FleetDashboard from './components/FleetDashboard';
 import EntityDetail from './components/EntityDetail';
 import ChatInterface from './components/ChatInterface';
-import { BusinessEntity, EntityStatus } from './types';
+import AgentMarketplace from './components/AgentMarketplace';
+import { BusinessEntity, EntityStatus, Agent } from './types';
+import { AGENTS_SEED } from './constants';
 
 const INITIAL_DUMMY_DATA: BusinessEntity[] = [
   {
@@ -61,6 +63,9 @@ const INITIAL_ENTITY = (id: string): BusinessEntity => ({
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [fleet, setFleet] = useState<BusinessEntity[]>(INITIAL_DUMMY_DATA);
+  const [globalAgents, setGlobalAgents] = useState<Agent[]>(
+    AGENTS_SEED.map(a => ({ ...a, assignedEntityId: 'node-101' }))
+  );
   const [view, setView] = useState<'LIST' | 'CREATE' | 'DETAIL'>('LIST');
   const [activeEntity, setActiveEntity] = useState<BusinessEntity>(INITIAL_ENTITY('new-node'));
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
@@ -78,6 +83,10 @@ const App: React.FC = () => {
       }
       return e;
     }));
+  };
+
+  const handleHireAgent = (agent: Agent) => {
+    setGlobalAgents(prev => [...prev, agent]);
   };
 
   const deployToFleet = () => {
@@ -134,6 +143,7 @@ const App: React.FC = () => {
         return (
           <EntityDetail 
             entity={entity} 
+            agents={globalAgents}
             onAction={handleEntityAction}
             onUpdate={updateEntityInFleet}
             onBack={() => setView('LIST')}
@@ -149,6 +159,13 @@ const App: React.FC = () => {
             fleet={fleet} 
             onViewDetail={openDetail} 
             onDeploy={startCreation}
+          />
+        );
+      case 'marketplace':
+        return (
+          <AgentMarketplace 
+            fleet={fleet}
+            onHire={handleHireAgent}
           />
         );
       case 'settings':
