@@ -12,6 +12,7 @@ export interface BusinessEntity {
   status: EntityStatus;
   jurisdiction: string;
   industry: string;
+  objective?: string;
   fundingGoal: number;
   currentCapital: number;
   stepsCompleted: number;

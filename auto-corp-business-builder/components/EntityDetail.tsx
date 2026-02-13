@@ -15,7 +15,12 @@ import {
   Clock, 
   Zap, 
   Save, 
-  Lock
+  Lock,
+  TrendingUp,
+  Target,
+  ArrowUpRight,
+  ArrowDownRight,
+  Code
 } from 'lucide-react';
 
 interface Props {
@@ -25,8 +30,8 @@ interface Props {
   onBack: () => void;
 }
 
-const EntityDetail: React.FC<Props> = ({ entity, onBack }) => {
-  const [activeTab, setActiveTab] = useState<'TASKS' | 'ORG' | 'STANDUP' | 'WORKSPACE' | 'DOCS'>('TASKS');
+const EntityDetail: React.FC<Props> = ({ entity, onUpdate, onBack }) => {
+  const [activeTab, setActiveTab] = useState<'TASKS' | 'ORG' | 'STANDUP' | 'DOCS' | 'FINANCIALS'>('TASKS');
   const [logs] = useState<OvernightLog[]>(LOGS_SEED);
   const [agents] = useState<Agent[]>(AGENTS_SEED);
   const [models] = useState<ModelConfig[]>(MODELS_SEED);
@@ -43,14 +48,19 @@ const EntityDetail: React.FC<Props> = ({ entity, onBack }) => {
   });
   const [selectedFile, setSelectedFile] = useState<string>('SOUL.md');
   const [editMode, setEditMode] = useState(false);
+  const [tempObjective, setTempObjective] = useState(entity.objective || '');
 
   const tabs = [
     { id: 'TASKS', label: 'Monitor', icon: <Activity size={18} /> },
     { id: 'ORG', label: 'Org Chart', icon: <Users size={18} /> },
+    { id: 'FINANCIALS', label: 'Financials', icon: <TrendingUp size={18} /> },
     { id: 'STANDUP', label: 'Standups', icon: <Mic2 size={18} /> },
-    { id: 'WORKSPACE', label: 'Workspaces', icon: <Terminal size={18} /> },
     { id: 'DOCS', label: 'Registry', icon: <FileText size={18} /> }
   ];
+
+  const handleObjectiveUpdate = () => {
+    onUpdate({ ...entity, objective: tempObjective });
+  };
 
   return (
     <div className="h-screen flex flex-col bg-[#FDFDFF] overflow-hidden text-slate-900">
@@ -236,6 +246,81 @@ const EntityDetail: React.FC<Props> = ({ entity, onBack }) => {
             </div>
           )}
 
+          {activeTab === 'FINANCIALS' && (
+            <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in duration-500">
+               <header>
+                  <h3 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Economic Equilibrium</h3>
+                  <p className="text-xs text-slate-400 uppercase font-bold mt-2">Real-time Balance Sheet // Automated Capital Allocation</p>
+               </header>
+
+               <div className="grid grid-cols-3 gap-8">
+                  <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Monthly Recurring Revenue</p>
+                     <div className="flex items-end gap-4">
+                        <span className="text-4xl font-black text-slate-900">$24,500</span>
+                        <span className="text-emerald-500 text-xs font-bold flex items-center mb-1">
+                           <ArrowUpRight size={14} /> +12%
+                        </span>
+                     </div>
+                  </div>
+                  <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Operational Burn</p>
+                     <div className="flex items-end gap-4">
+                        <span className="text-4xl font-black text-slate-900">$8,200</span>
+                        <span className="text-rose-500 text-xs font-bold flex items-center mb-1">
+                           <ArrowDownRight size={14} /> -4%
+                        </span>
+                     </div>
+                  </div>
+                  <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Projected Profit (Q1)</p>
+                     <div className="flex items-end gap-4">
+                        <span className="text-4xl font-black text-emerald-600">$16,300</span>
+                        <span className="text-emerald-500 text-xs font-bold flex items-center mb-1">
+                           <TrendingUp size={14} /> NOMINAL
+                        </span>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-12 gap-8">
+                  <div className="col-span-8 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-8">Revenue Growth Visualization</h4>
+                     <div className="h-64 flex items-end gap-3 pb-4">
+                        {[40, 55, 45, 70, 85, 95, 80, 100].map((h, i) => (
+                          <div key={i} className="flex-1 bg-slate-100 rounded-t-2xl relative group cursor-pointer hover:bg-blue-600 transition-colors">
+                             <div className="absolute bottom-0 left-0 w-full bg-slate-900 rounded-t-2xl transition-all duration-1000 group-hover:bg-white" style={{ height: `${h}%` }}></div>
+                             <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-[9px] font-black opacity-0 group-hover:opacity-100 transition-opacity">
+                               ${(h * 250).toLocaleString()}
+                             </div>
+                          </div>
+                        ))}
+                     </div>
+                     <div className="flex justify-between mt-4 text-[9px] font-black text-slate-300 uppercase tracking-widest px-2">
+                        <span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span>
+                     </div>
+                  </div>
+
+                  <div className="col-span-4 space-y-8">
+                     <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-6">Capital Runway</h4>
+                        <div className="text-4xl font-black mb-4">15.2 Months</div>
+                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                           <div className="h-full bg-blue-500 w-3/4"></div>
+                        </div>
+                        <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase">Based on current node expenditure</p>
+                     </div>
+                     <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 italic">Fiscal Strategy</h4>
+                        <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                           "Agents are currently optimized for growth over profit. Scaling customer acquisition nodes while maintaining a 60% gross margin target."
+                        </p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+          )}
+
           {activeTab === 'STANDUP' && (
             <div className="max-w-6xl mx-auto grid grid-cols-12 gap-10 animate-in fade-in duration-500 h-full">
                <div className="col-span-8 flex flex-col gap-6">
@@ -306,60 +391,6 @@ const EntityDetail: React.FC<Props> = ({ entity, onBack }) => {
             </div>
           )}
 
-          {activeTab === 'WORKSPACE' && (
-            <div className="h-full flex flex-col gap-8 animate-in fade-in duration-500">
-               <header className="flex justify-between items-center shrink-0">
-                  <div className="flex gap-2">
-                     {Object.keys(vfs).map(fileName => (
-                       <button 
-                         key={fileName}
-                         onClick={() => setSelectedFile(fileName)}
-                         className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl border transition-all ${
-                           selectedFile === fileName ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50'
-                         }`}
-                       >
-                         {fileName}
-                       </button>
-                     ))}
-                  </div>
-                  <div className="flex gap-3">
-                     <button 
-                       onClick={() => setEditMode(!editMode)} 
-                       className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-                         editMode ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-white border border-slate-100 text-slate-600'
-                       }`}
-                     >
-                       {editMode ? <Lock size={12} /> : <Terminal size={12} />}
-                       {editMode ? 'Lock Buffer' : 'Unlock Editor'}
-                     </button>
-                     <button className="bg-slate-900 text-white px-10 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2">
-                       <Save size={14} />
-                       Commit
-                     </button>
-                  </div>
-               </header>
-
-               <div className="flex-1 bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden flex relative">
-                  <div className="w-16 border-r border-slate-50 flex flex-col items-center py-10 gap-4 bg-slate-50/50 text-[10px] font-mono text-slate-200 select-none">
-                     {Array.from({ length: 40 }).map((_, i) => <div key={i}>{i+1}</div>)}
-                  </div>
-                  {editMode ? (
-                    <textarea 
-                      className="flex-1 bg-transparent p-12 outline-none text-slate-700 text-sm font-mono leading-relaxed resize-none custom-scrollbar"
-                      value={vfs[selectedFile as keyof typeof vfs]}
-                      onChange={(e) => setVfs({...vfs, [selectedFile]: e.target.value})}
-                      spellCheck={false}
-                    />
-                  ) : (
-                    <div className="flex-1 p-12 text-slate-600 text-sm font-mono leading-relaxed whitespace-pre-wrap overflow-y-auto custom-scrollbar">
-                      {vfs[selectedFile as keyof typeof vfs]}
-                      <span className="w-2 h-5 bg-blue-600 inline-block animate-pulse ml-1 align-middle"></span>
-                    </div>
-                  )}
-               </div>
-            </div>
-          )}
-
           {activeTab === 'DOCS' && (
             <div className="max-w-4xl mx-auto animate-in fade-in duration-500 space-y-16 pb-32">
                <div className="space-y-6">
@@ -371,6 +402,100 @@ const EntityDetail: React.FC<Props> = ({ entity, onBack }) => {
                </div>
                
                <article className="prose prose-slate max-w-none text-slate-600 leading-relaxed space-y-12">
+                  {/* Company Objective Input Field */}
+                  <section className="bg-white p-12 rounded-[3rem] border border-slate-100 shadow-sm space-y-8">
+                     <header className="flex items-center gap-4">
+                        <div className="p-3 bg-slate-900 text-white rounded-2xl shadow-lg"><Target size={24} /></div>
+                        <div>
+                           <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest">Operational Objective</h2>
+                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Primary Strategic North Star</p>
+                        </div>
+                     </header>
+                     <div className="space-y-4">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Mission Statement for Autonomous Agents</label>
+                        <div className="relative group">
+                           <input 
+                              type="text"
+                              value={tempObjective}
+                              onChange={(e) => setTempObjective(e.target.value)}
+                              onBlur={handleObjectiveUpdate}
+                              placeholder="Define the core purpose for your agent swarm..."
+                              className="w-full bg-slate-50 border-none rounded-2xl p-6 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-slate-900 transition-all outline-none"
+                           />
+                           <button 
+                             onClick={handleObjectiveUpdate}
+                             className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-slate-900 text-white rounded-xl shadow-lg opacity-0 group-focus-within:opacity-100 transition-opacity"
+                           >
+                             <Save size={16} />
+                           </button>
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-medium px-2 leading-relaxed">
+                           Agents utilize this objective to weigh decision trees during autonomous cycles, balancing growth and sustainability targets.
+                        </p>
+                     </div>
+                  </section>
+
+                  {/* Procedural Workspace (Moved here from separate tab) */}
+                  <section className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col h-[600px]">
+                     <header className="p-10 border-b border-slate-50 flex items-center justify-between shrink-0 bg-slate-50/30">
+                        <div className="flex items-center gap-4">
+                           <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-xl"><Code size={24} /></div>
+                           <div>
+                              <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest">Live Workspace</h2>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Procedural Document Buffers</p>
+                           </div>
+                        </div>
+                        <div className="flex gap-2">
+                           <button 
+                             onClick={() => setEditMode(!editMode)} 
+                             className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                               editMode ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-white border border-slate-100 text-slate-600'
+                             }`}
+                           >
+                             {editMode ? <Lock size={12} /> : <Terminal size={12} />}
+                             {editMode ? 'Lock Buffer' : 'Unlock Editor'}
+                           </button>
+                           <button className="bg-slate-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2">
+                             <Save size={14} />
+                             Commit
+                           </button>
+                        </div>
+                     </header>
+                     
+                     <div className="flex items-center gap-2 p-4 bg-white border-b border-slate-50 overflow-x-auto">
+                        {Object.keys(vfs).map(fileName => (
+                          <button 
+                            key={fileName}
+                            onClick={() => setSelectedFile(fileName)}
+                            className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
+                              selectedFile === fileName ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'
+                            }`}
+                          >
+                            {fileName}
+                          </button>
+                        ))}
+                     </div>
+
+                     <div className="flex-1 overflow-hidden flex relative bg-white">
+                        <div className="w-12 border-r border-slate-50 flex flex-col items-center py-8 gap-3 bg-slate-50/30 text-[9px] font-mono text-slate-300 select-none">
+                           {Array.from({ length: 40 }).map((_, i) => <div key={i}>{i+1}</div>)}
+                        </div>
+                        {editMode ? (
+                          <textarea 
+                            className="flex-1 bg-transparent p-10 outline-none text-slate-700 text-sm font-mono leading-relaxed resize-none custom-scrollbar"
+                            value={vfs[selectedFile as keyof typeof vfs]}
+                            onChange={(e) => setVfs({...vfs, [selectedFile]: e.target.value})}
+                            spellCheck={false}
+                          />
+                        ) : (
+                          <div className="flex-1 p-10 text-slate-600 text-sm font-mono leading-relaxed whitespace-pre-wrap overflow-y-auto custom-scrollbar">
+                            {vfs[selectedFile as keyof typeof vfs]}
+                            <span className="w-2 h-4 bg-blue-600 inline-block animate-pulse ml-1 align-middle"></span>
+                          </div>
+                        )}
+                     </div>
+                  </section>
+
                   <section className="space-y-6 bg-white p-12 rounded-[3rem] border border-slate-100 shadow-sm">
                      <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-6">Protocol 01: Corporate DNA</h2>
                      <p className="text-lg">Auto-Corp nodes operate on a recursive governance model. This entity is authorized to manifest operations under the following algorithmic constraints:</p>
@@ -405,19 +530,6 @@ const EntityDetail: React.FC<Props> = ({ entity, onBack }) => {
 
         </main>
       </div>
-
-      {/* Modern Status Footer */}
-      <footer className="h-12 border-t border-slate-100 flex items-center justify-between px-10 bg-white text-[10px] font-black uppercase tracking-widest z-20 shrink-0">
-         <div className="flex gap-8">
-            <span className="text-slate-400">Mesh Status: <span className="text-emerald-600">Active</span></span>
-            <span className="text-slate-400">Node Sync: <span className="text-slate-900">14ms</span></span>
-            <span className="text-slate-400">Crypto: <span className="text-slate-900">RSA-4096</span></span>
-         </div>
-         <div className="flex items-center gap-3 text-slate-400">
-            <Activity size={12} className="text-emerald-500" />
-            <span>Operational Equilibrium Detected</span>
-         </div>
-      </footer>
     </div>
   );
 };
