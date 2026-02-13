@@ -6,6 +6,7 @@ import FleetDashboard from './components/FleetDashboard';
 import EntityDetail from './components/EntityDetail';
 import ChatInterface from './components/ChatInterface';
 import AgentMarketplace from './components/AgentMarketplace';
+import IntegrationsGallery from './components/IntegrationsGallery';
 import { BusinessEntity, EntityStatus, Agent } from './types';
 import { AGENTS_SEED } from './constants';
 
@@ -167,6 +168,10 @@ const App: React.FC = () => {
             fleet={fleet}
             onHire={handleHireAgent}
           />
+        );
+      case 'bridge':
+        return (
+          <IntegrationsGallery />
         );
       case 'settings':
         return (

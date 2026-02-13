@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, Settings, Bot, Building2, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, Settings, Bot, Building2, ShoppingBag, Share2 } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,13 +24,14 @@ const Layout: React.FC<LayoutProps> = ({
   const tabs = [
     { id: 'dashboard', label: 'Entity Fleet', icon: <LayoutDashboard size={20} /> },
     { id: 'marketplace', label: 'Agent Marketplace', icon: <ShoppingBag size={20} /> },
+    { id: 'bridge', label: 'The Bridge', icon: <Share2 size={20} /> },
     { id: 'settings', label: 'Global Config', icon: <Settings size={20} /> },
   ];
 
   return (
     <div className="flex h-screen bg-[#FDFDFF] overflow-hidden text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       {/* Sidebar */}
-      <aside className="w-80 bg-white border-r border-slate-100 flex flex-col hidden lg:flex">
+      <aside className="w-80 bg-white border-r border-slate-100 flex flex-col hidden lg:flex shrink-0">
         <div className="p-10">
           <div className="flex items-center gap-3 mb-2">
              <div className="w-10 h-10 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-slate-200">
@@ -41,7 +42,7 @@ const Layout: React.FC<LayoutProps> = ({
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Automated Orchestration</p>
         </div>
         
-        <nav className="flex-1 px-6 space-y-2 mt-4">
+        <nav className="flex-1 px-6 space-y-2 mt-4 overflow-y-auto custom-scrollbar">
           {tabs.map((tab) => (
             <button
               key={tab.id}

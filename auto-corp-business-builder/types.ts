@@ -27,20 +27,16 @@ export interface Step {
   component: 'IDEATION' | 'FORMALIZATION' | 'FUNDING' | 'INFRA' | 'GOVERNANCE';
 }
 
-export interface VCRecommendation {
+export interface Integration {
+  id: string;
   name: string;
-  focus: string;
-  fitScore: number;
-  reason: string;
+  provider: string;
+  category: 'COMMUNICATION' | 'PRODUCTION' | 'FINANCE' | 'GROWTH' | 'DEV';
+  status: 'CONNECTED' | 'DISCONNECTED' | 'PENDING';
+  lastSync?: string;
+  capabilities: string[];
 }
 
-export interface EntityAdvice {
-  recommendedEntity: string;
-  keyRegulation: string;
-  timeToSpinUp: string;
-}
-
-// Command Center Types
 export interface Agent {
   id: string;
   name: string;
@@ -52,6 +48,8 @@ export interface Agent {
   responsibilities: string[];
   customInstructions?: string;
   assignedEntityId?: string;
+  activeIntegrations?: string[];
+  tools?: string[];
 }
 
 export interface SessionEvent {
@@ -86,4 +84,18 @@ export interface OvernightLog {
   agentId: string;
   event: string;
   outcome: string;
+}
+
+// Fix: Exporting missing types used for Gemini API structured outputs
+export interface VCRecommendation {
+  name: string;
+  focus: string;
+  fitScore: number;
+  reason: string;
+}
+
+export interface EntityAdvice {
+  recommendedEntity: string;
+  keyRegulation: string;
+  timeToSpinUp: string;
 }

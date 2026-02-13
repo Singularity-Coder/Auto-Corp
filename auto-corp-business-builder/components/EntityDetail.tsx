@@ -21,7 +21,15 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Code,
-  Info
+  Info,
+  X,
+  Share2,
+  Settings,
+  Shield,
+  ExternalLink,
+  ChevronRight,
+  Bot,
+  Edit2
 } from 'lucide-react';
 
 interface Props {
@@ -34,6 +42,12 @@ interface Props {
 
 const EntityDetail: React.FC<Props> = ({ entity, agents, onUpdate, onBack }) => {
   const [activeTab, setActiveTab] = useState<'TASKS' | 'ORG' | 'STANDUP' | 'DOCS' | 'FINANCIALS'>('TASKS');
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  
+  // State for Agent-specific files
+  const [agentFileStore, setAgentFileStore] = useState<Record<string, Record<string, string>>>({});
+  const [editingFileData, setEditingFileData] = useState<{ agentId: string; fileName: string; content: string } | null>(null);
+
   const [logs] = useState<OvernightLog[]>(LOGS_SEED);
   const [models] = useState<ModelConfig[]>(MODELS_SEED);
   const [standups] = useState<Standup[]>(STANDUPS_SEED);
@@ -53,6 +67,7 @@ const EntityDetail: React.FC<Props> = ({ entity, agents, onUpdate, onBack }) => 
 
   // Filter agents for this specific entity
   const entityAgents = agents.filter(a => a.assignedEntityId === entity.id);
+  const selectedAgent = entityAgents.find(a => a.id === selectedAgentId);
 
   const tabs = [
     { id: 'TASKS', label: 'Monitor', icon: <Activity size={18} /> },
@@ -66,8 +81,47 @@ const EntityDetail: React.FC<Props> = ({ entity, agents, onUpdate, onBack }) => 
     onUpdate({ ...entity, objective: tempObjective });
   };
 
+  const agentFiles = ['SOUL.md', 'IDENTITY.md', 'TOOLS.md', 'MEMORY.md', 'HEARTBEAT.md'];
+
+  const getAgentFileContent = (agentId: string, fileName: string) => {
+    if (agentFileStore[agentId]?.[fileName]) return agentFileStore[agentId][fileName];
+    
+    // Default seed content
+    const agent = agents.find(a => a.id === agentId);
+    if (!agent) return "";
+
+    switch(fileName) {
+      case 'SOUL.md': return `# ${agent.name} Soul\n${agent.customInstructions || 'Operate within standard corporate parameters.'}`;
+      case 'IDENTITY.md': return `NAME: ${agent.name}\nROLE: ${agent.role}\nDEPT: ${agent.department}\nSTATUS: ${agent.status}`;
+      case 'TOOLS.md': return `# Authorized Tools\n${(agent.tools || ['Standard Reasoning']).map(t => `- ${t}`).join('\n')}`;
+      case 'MEMORY.md': return `# Neural Memory\n- [${new Date().toLocaleDateString()}] Initialized as ${agent.role}.`;
+      case 'HEARTBEAT.md': return `FORGE HEARTBEAT\nTimestamp: ${new Date().toISOString()}\nStatus: ACTIVE\nCurrent Task: ${agent.responsibilities[0]}`;
+      default: return "";
+    }
+  };
+
+  const openEditor = (agentId: string, fileName: string) => {
+    setEditingFileData({
+      agentId,
+      fileName,
+      content: getAgentFileContent(agentId, fileName)
+    });
+  };
+
+  const saveAgentFile = () => {
+    if (!editingFileData) return;
+    setAgentFileStore(prev => ({
+      ...prev,
+      [editingFileData.agentId]: {
+        ...(prev[editingFileData.agentId] || {}),
+        [editingFileData.fileName]: editingFileData.content
+      }
+    }));
+    setEditingFileData(null);
+  };
+
   return (
-    <div className="h-screen flex flex-col bg-[#FDFDFF] overflow-hidden text-slate-900">
+    <div className="h-screen flex flex-col bg-[#FDFDFF] overflow-hidden text-slate-900 relative">
       
       {/* Top Header */}
       <header className="h-20 border-b border-slate-100 flex items-center justify-between px-10 bg-white z-20 shrink-0">
@@ -229,27 +283,37 @@ const EntityDetail: React.FC<Props> = ({ entity, agents, onUpdate, onBack }) => 
                        </header>
                        <div className="space-y-4">
                           {entityAgents.filter(a => a.department === dept).map(agent => (
-                            <div key={agent.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-300 group">
+                            <button 
+                              key={agent.id} 
+                              onClick={() => setSelectedAgentId(agent.id)}
+                              className="w-full text-left bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-300 group relative overflow-hidden"
+                            >
                                <div className="flex justify-between items-start mb-4">
-                                  <span className="text-[9px] font-black px-2 py-0.5 bg-slate-50 text-slate-400 rounded-lg">{agent.id}</span>
+                                  <span className="text-[9px] font-black px-2 py-0.5 bg-slate-50 text-slate-400 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">{agent.id}</span>
                                   <div className={`w-1.5 h-1.5 rounded-full ${agent.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>
                                </div>
-                               <h5 className="font-bold text-slate-900 leading-tight">{agent.name}</h5>
-                               <p className="text-[10px] text-blue-600 font-bold uppercase mt-1">{agent.role}</p>
+                               <h5 className="font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">{agent.name}</h5>
+                               <p className="text-[10px] text-blue-600 font-bold uppercase mt-1 group-hover:text-slate-900 transition-colors">{agent.role}</p>
                                
-                               {agent.customInstructions && (
-                                 <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100 text-[9px] text-slate-500 italic flex items-start gap-2">
-                                    <Info size={10} className="shrink-0 mt-0.5 text-blue-400" />
-                                    <span className="line-clamp-2">"{agent.customInstructions}"</span>
+                               {agent.activeIntegrations && agent.activeIntegrations.length > 0 && (
+                                 <div className="mt-4 flex gap-1 items-center">
+                                    <div className="flex -space-x-1.5">
+                                      {agent.activeIntegrations.slice(0, 3).map((intId, i) => (
+                                        <div key={i} className="w-5 h-5 rounded-full bg-slate-900 border border-white flex items-center justify-center text-[8px] text-white">
+                                          <Share2 size={8} />
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <span className="text-[8px] font-black text-slate-300 uppercase tracking-tighter">Connected</span>
                                  </div>
                                )}
 
-                               <div className="mt-6 flex flex-wrap gap-1.5">
+                               <div className="mt-6 flex flex-wrap gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
                                   {agent.modelTags.map(tag => (
                                     <span key={tag} className="text-[8px] font-black px-2 py-1 bg-slate-50 text-slate-400 rounded-lg border border-slate-100 uppercase">{tag}</span>
                                   ))}
                                </div>
-                            </div>
+                            </button>
                           ))}
                           {entityAgents.filter(a => a.department === dept).length === 0 && (
                             <div className="p-8 border-2 border-dashed border-slate-100 rounded-[2rem] text-center">
@@ -452,7 +516,7 @@ const EntityDetail: React.FC<Props> = ({ entity, agents, onUpdate, onBack }) => 
                      </div>
                   </section>
 
-                  {/* Procedural Workspace (Moved here from separate tab) */}
+                  {/* Procedural Workspace */}
                   <section className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col h-[600px]">
                      <header className="p-10 border-b border-slate-50 flex items-center justify-between shrink-0 bg-slate-50/30">
                         <div className="flex items-center gap-4">
@@ -547,6 +611,217 @@ const EntityDetail: React.FC<Props> = ({ entity, agents, onUpdate, onBack }) => 
 
         </main>
       </div>
+
+      {/* Agent Detail Intelligence Profile Overlay */}
+      {selectedAgent && (
+        <div className="fixed inset-0 z-[100] flex justify-end animate-in fade-in duration-300">
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setSelectedAgentId(null)}
+          ></div>
+          <div className="relative w-full max-w-xl bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 overflow-hidden">
+             
+             {/* Profile Header */}
+             <header className="p-10 bg-slate-900 text-white shrink-0 relative">
+                <button 
+                  onClick={() => setSelectedAgentId(null)}
+                  className="absolute top-8 right-8 p-3 hover:bg-white/10 rounded-2xl transition-colors"
+                >
+                   <X size={20} />
+                </button>
+                <div className="flex items-center gap-6">
+                   <div className="w-20 h-20 bg-blue-600 rounded-[2rem] flex items-center justify-center shadow-2xl">
+                      <Bot size={40} />
+                   </div>
+                   <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                         <h3 className="text-3xl font-black tracking-tight">{selectedAgent.name}</h3>
+                         <span className="text-[10px] font-black bg-blue-500 px-2 py-0.5 rounded uppercase">{selectedAgent.id}</span>
+                      </div>
+                      <p className="text-blue-400 font-bold uppercase text-xs tracking-widest">{selectedAgent.role}</p>
+                   </div>
+                </div>
+                
+                <div className="mt-10 flex gap-4">
+                   <div className="flex-1 bg-white/5 rounded-2xl p-4 border border-white/10">
+                      <p className="text-[9px] font-black text-slate-500 uppercase mb-1">Status</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span className="text-xs font-bold">{selectedAgent.status}</span>
+                      </div>
+                   </div>
+                   <div className="flex-1 bg-white/5 rounded-2xl p-4 border border-white/10">
+                      <p className="text-[9px] font-black text-slate-500 uppercase mb-1">Compute Tier</p>
+                      <span className="text-xs font-bold">{selectedAgent.modelTags[0]}</span>
+                   </div>
+                </div>
+             </header>
+
+             {/* Profile Body */}
+             <div className="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar">
+                
+                {/* Capabilities / Tools */}
+                <section className="space-y-6">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Settings size={14} className="text-blue-500" /> Authorized Toolset
+                   </h4>
+                   <div className="grid grid-cols-2 gap-3">
+                      {(selectedAgent.tools || ['Standard Reasoning', 'Context Retrieval']).map((tool, i) => (
+                        <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3 group hover:border-blue-200 transition-all">
+                           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors">
+                              <Zap size={14} />
+                           </div>
+                           <span className="text-xs font-bold text-slate-700">{tool}</span>
+                        </div>
+                      ))}
+                   </div>
+                </section>
+
+                {/* Integration Bridges */}
+                <section className="space-y-6">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Share2 size={14} className="text-blue-500" /> Integration Bridges
+                   </h4>
+                   <div className="space-y-3">
+                      {(selectedAgent.activeIntegrations || []).length > 0 ? (
+                        selectedAgent.activeIntegrations?.map((intId, i) => (
+                          <div key={i} className="p-5 bg-white border border-slate-100 rounded-2xl flex items-center justify-between group hover:shadow-lg transition-all">
+                             <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white">
+                                   <ExternalLink size={18} />
+                                </div>
+                                <div>
+                                   <p className="text-sm font-black text-slate-900 uppercase">{intId.replace('-', ' ')}</p>
+                                   <p className="text-[9px] font-bold text-slate-400 uppercase">Read/Write Access</p>
+                                </div>
+                             </div>
+                             <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase">
+                                <Shield size={12} /> Established
+                             </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-8 border-2 border-dashed border-slate-100 rounded-[2rem] text-center">
+                           <p className="text-[10px] font-bold text-slate-300 uppercase italic">No external bridges established</p>
+                        </div>
+                      )}
+                   </div>
+                </section>
+
+                {/* Responsibilities */}
+                <section className="space-y-6">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Target size={14} className="text-blue-500" /> Node Responsibilities
+                   </h4>
+                   <ul className="space-y-3">
+                      {selectedAgent.responsibilities.map((resp, i) => (
+                        <li key={i} className="flex gap-4 group">
+                           <div className="w-5 h-5 rounded-full border border-slate-200 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-blue-600 group-hover:border-blue-600 transition-colors">
+                              <CheckCircle2 size={10} className="text-slate-300 group-hover:text-white" />
+                           </div>
+                           <span className="text-sm text-slate-600 font-medium leading-relaxed">{resp}</span>
+                        </li>
+                      ))}
+                   </ul>
+                </section>
+
+                {/* Soul Instructions */}
+                {selectedAgent.customInstructions && (
+                  <section className="space-y-6 bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Terminal size={14} className="text-blue-500" /> Embedded Soul
+                     </h4>
+                     <p className="text-xs font-mono text-slate-500 leading-relaxed italic">
+                        "{selectedAgent.customInstructions}"
+                     </p>
+                  </section>
+                )}
+
+                {/* NEW: Neural File System Section */}
+                <section className="space-y-6">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <FileText size={14} className="text-blue-500" /> Neural Protocols
+                   </h4>
+                   <div className="space-y-3">
+                      {agentFiles.map(file => (
+                        <div key={file} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
+                           <div className="flex items-center gap-3">
+                              <FileText size={16} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
+                              <span className="text-xs font-bold text-slate-700">{file}</span>
+                           </div>
+                           <button 
+                             onClick={() => openEditor(selectedAgent.id, file)}
+                             className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                           >
+                              <Edit2 size={14} />
+                           </button>
+                        </div>
+                      ))}
+                   </div>
+                </section>
+             </div>
+
+             {/* Footer Actions */}
+             <footer className="p-8 border-t border-slate-100 bg-slate-50 shrink-0 flex gap-4">
+                <button className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all">
+                   Refresh Context
+                </button>
+                <button className="flex-1 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-2">
+                   Scaffold Sub-Node <ChevronRight size={14} />
+                </button>
+             </footer>
+          </div>
+        </div>
+      )}
+
+      {/* NEW: Neural File Editor Modal */}
+      {editingFileData && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 animate-in fade-in duration-300">
+           <div 
+             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+             onClick={() => setEditingFileData(null)}
+           ></div>
+           <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+              <header className="p-8 border-b border-slate-100 flex items-center justify-between shrink-0">
+                 <div className="flex items-center gap-4">
+                    <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-lg"><Edit2 size={18} /></div>
+                    <div>
+                       <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Editing Protocol</h3>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{editingFileData.agentId} / {editingFileData.fileName}</p>
+                    </div>
+                 </div>
+                 <button onClick={() => setEditingFileData(null)} className="p-2 hover:bg-slate-50 rounded-xl transition-all">
+                    <X size={20} className="text-slate-400" />
+                 </button>
+              </header>
+
+              <div className="p-8 flex-1">
+                 <textarea 
+                    autoFocus
+                    spellCheck={false}
+                    className="w-full h-80 bg-slate-50 border-none rounded-2xl p-6 text-sm font-mono leading-relaxed outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                    value={editingFileData.content}
+                    onChange={(e) => setEditingFileData({...editingFileData, content: e.target.value})}
+                 />
+              </div>
+
+              <footer className="p-8 border-t border-slate-100 bg-slate-50 flex gap-4 shrink-0">
+                 <button 
+                   onClick={() => setEditingFileData(null)}
+                   className="flex-1 py-4 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all"
+                 >
+                    Cancel
+                 </button>
+                 <button 
+                   onClick={saveAgentFile}
+                   className="flex-1 py-4 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                 >
+                    <Save size={14} /> Commit Changes
+                 </button>
+              </footer>
+           </div>
+        </div>
+      )}
     </div>
   );
 };

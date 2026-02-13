@@ -3,9 +3,9 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_PROMPT } from "./constants";
 import { VCRecommendation, EntityAdvice } from "./types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
+// Fix: Moving GoogleGenAI instantiation into individual functions as per SDK safety guidelines
 export async function getVCMatch(businessIdea: string, industry: string): Promise<VCRecommendation[]> {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Match the following business to 3 realistic VC firms or types. 
@@ -38,6 +38,7 @@ export async function getVCMatch(businessIdea: string, industry: string): Promis
 }
 
 export async function getEntityAdvice(jurisdiction: string, industry: string): Promise<EntityAdvice> {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Identify the fastest minimum viable legal entity for ${industry} in ${jurisdiction}.`,
@@ -65,6 +66,7 @@ export async function getEntityAdvice(jurisdiction: string, industry: string): P
 }
 
 export async function getInfraAdvice(industry: string) {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Recommend the top 3 digital banking and operational tools for a new ${industry} company.`,

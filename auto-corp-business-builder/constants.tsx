@@ -13,23 +13,52 @@ export const SYSTEM_PROMPT = `You are the Auto-Corp Orchestrator, an expert in g
 
 // 25 AGENTS SEED DATA
 export const AGENTS_SEED: Agent[] = [
-  { id: 'ceo-01', name: 'Orion-Alpha', role: 'Chief Executive Orchestrator', department: 'EXECUTIVE', status: 'ACTIVE', modelTags: ['gemini-3-pro-preview'], responsibilities: ['Global Strategy', 'Resource Allocation'] },
-  { id: 'cto-01', name: 'Cyber-Core', role: 'Chief Technical Officer', department: 'EXECUTIVE', status: 'ACTIVE', modelTags: ['gemini-3-pro-preview'], responsibilities: ['Infra Scaling', 'Architecture'] },
-  { id: 'cmo-01', name: 'Flux-Growth', role: 'Chief Marketing Officer', department: 'EXECUTIVE', status: 'ACTIVE', modelTags: ['gemini-3-flash-preview'], responsibilities: ['Market Penetration'] },
+  { 
+    id: 'ceo-01', 
+    name: 'Orion-Alpha', 
+    role: 'Chief Executive Orchestrator', 
+    department: 'EXECUTIVE', 
+    status: 'ACTIVE', 
+    modelTags: ['gemini-3-pro-preview'], 
+    responsibilities: ['Global Strategy', 'Resource Allocation'],
+    activeIntegrations: ['google-workspace', 'mercury'],
+    tools: ['Strategic Planner', 'Budget Optimizer']
+  },
+  { 
+    id: 'cto-01', 
+    name: 'Cyber-Core', 
+    role: 'Chief Technical Officer', 
+    department: 'EXECUTIVE', 
+    status: 'ACTIVE', 
+    modelTags: ['gemini-3-pro-preview'], 
+    responsibilities: ['Infra Scaling', 'Architecture'],
+    activeIntegrations: ['github', 'google-workspace'],
+    tools: ['Cloud Architect', 'Python Sandbox']
+  },
+  { 
+    id: 'cmo-01', 
+    name: 'Flux-Growth', 
+    role: 'Chief Marketing Officer', 
+    department: 'EXECUTIVE', 
+    status: 'ACTIVE', 
+    modelTags: ['gemini-3-flash-preview'], 
+    responsibilities: ['Market Penetration'],
+    activeIntegrations: ['x-twitter', 'google-workspace'],
+    tools: ['Sentiment Analyzer', 'Ad Copy Gen']
+  },
   
   // Engineering Team
-  { id: 'eng-01', name: 'Node-Prime', role: 'Senior Architect', department: 'ENGINEERING', status: 'ACTIVE', modelTags: ['gemini-3-pro-preview'], chiefId: 'cto-01', responsibilities: ['Backend Services'] },
-  { id: 'eng-02', name: 'UI-Gen', role: 'Frontend Engineer', department: 'ENGINEERING', status: 'ACTIVE', modelTags: ['gemini-3-flash-preview'], chiefId: 'cto-01', responsibilities: ['React Interfaces'] },
-  { id: 'eng-03', name: 'Data-Flow', role: 'Data Scientist', department: 'ENGINEERING', status: 'IDLE', modelTags: ['gemini-3-pro-preview'], chiefId: 'cto-01', responsibilities: ['Analytics'] },
-  { id: 'eng-04', name: 'Security-Wall', role: 'SecOps Agent', department: 'ENGINEERING', status: 'ACTIVE', modelTags: ['gemini-3-pro-preview'], chiefId: 'cto-01', responsibilities: ['Penetration Testing'] },
-  { id: 'eng-05', name: 'DevOps-X', role: 'SRE Agent', department: 'ENGINEERING', status: 'ACTIVE', modelTags: ['gemini-3-flash-preview'], chiefId: 'cto-01', responsibilities: ['CI/CD Pipelines'] },
+  { id: 'eng-01', name: 'Node-Prime', role: 'Senior Architect', department: 'ENGINEERING', status: 'ACTIVE', modelTags: ['gemini-3-pro-preview'], chiefId: 'cto-01', responsibilities: ['Backend Services'], tools: ['PostgreSQL Expert', 'API Generator'], activeIntegrations: ['github'] },
+  { id: 'eng-02', name: 'UI-Gen', role: 'Frontend Engineer', department: 'ENGINEERING', status: 'ACTIVE', modelTags: ['gemini-3-flash-preview'], chiefId: 'cto-01', responsibilities: ['React Interfaces'], tools: ['Tailwind CSS Gen', 'SVG Optimizer'], activeIntegrations: ['github'] },
+  { id: 'eng-03', name: 'Data-Flow', role: 'Data Scientist', department: 'ENGINEERING', status: 'IDLE', modelTags: ['gemini-3-pro-preview'], chiefId: 'cto-01', responsibilities: ['Analytics'], tools: ['NumPy Runner', 'Matplotlib Gen'] },
+  { id: 'eng-04', name: 'Security-Wall', role: 'SecOps Agent', department: 'ENGINEERING', status: 'ACTIVE', modelTags: ['gemini-3-pro-preview'], chiefId: 'cto-01', responsibilities: ['Penetration Testing'], tools: ['Vulnerability Scanner', 'JWT Decoder'] },
+  { id: 'eng-05', name: 'DevOps-X', role: 'SRE Agent', department: 'ENGINEERING', status: 'ACTIVE', modelTags: ['gemini-3-flash-preview'], chiefId: 'cto-01', responsibilities: ['CI/CD Pipelines'], tools: ['Docker Compose Gen', 'K8s Manager'] },
 
   // Growth Team
-  { id: 'gro-01', name: 'Lead-Genie', role: 'Sales Lead', department: 'GROWTH', status: 'ACTIVE', modelTags: ['gemini-3-flash-preview'], chiefId: 'cmo-01', responsibilities: ['Cold Outreach'] },
-  { id: 'gro-02', name: 'Content-Grid', role: 'Social Media', department: 'GROWTH', status: 'ACTIVE', modelTags: ['gemini-3-flash-preview'], chiefId: 'cmo-01', responsibilities: ['Viral Loops'] },
-  { id: 'gro-03', name: 'SEO-Bot', role: 'SEO Specialist', department: 'GROWTH', status: 'SCAFFOLDED', modelTags: ['gemini-3-flash-preview'], chiefId: 'cmo-01', responsibilities: ['Keyword Mapping'] },
+  { id: 'gro-01', name: 'Lead-Genie', role: 'Sales Lead', department: 'GROWTH', status: 'ACTIVE', modelTags: ['gemini-3-flash-preview'], chiefId: 'cmo-01', responsibilities: ['Cold Outreach'], tools: ['Email Scraper', 'CRM Updater'], activeIntegrations: ['google-workspace'] },
+  { id: 'gro-02', name: 'Content-Grid', role: 'Social Media', department: 'GROWTH', status: 'ACTIVE', modelTags: ['gemini-3-flash-preview'], chiefId: 'cmo-01', responsibilities: ['Viral Loops'], tools: ['Post Scheduler', 'Meme Gen'], activeIntegrations: ['x-twitter'] },
+  { id: 'gro-03', name: 'SEO-Bot', role: 'SEO Specialist', department: 'GROWTH', status: 'SCAFFOLDED', modelTags: ['gemini-3-flash-preview'], chiefId: 'cmo-01', responsibilities: ['Keyword Mapping'], tools: ['SERP Checker', 'Backlink Tracker'] },
   
-  // 14 more agents to make 25... (simplified list)
   ...Array.from({ length: 14 }).map((_, i) => ({
     id: `agent-${i+10}`,
     name: `Worker-Node-${i+10}`,
@@ -37,12 +66,12 @@ export const AGENTS_SEED: Agent[] = [
     department: (['OPERATIONS', 'ENGINEERING', 'GROWTH'])[i % 3] as any,
     status: 'ACTIVE' as any,
     modelTags: ['gemini-3-flash-preview'],
-    responsibilities: ['Automated Task Processing']
+    responsibilities: ['Automated Task Processing'],
+    tools: ['General Logic', 'Buffer Manager']
   }))
 ];
 
 export const MODELS_SEED: ModelConfig[] = [
-  // Updated to full model names as per guidelines
   { id: 'gemini-3-pro-preview', provider: 'Google', role: 'Logic & Reasoning', status: 'ONLINE', costPer1k: 0.002, fallbackId: 'gemini-3-flash-preview' },
   { id: 'gemini-3-flash-preview', provider: 'Google', role: 'Speed & Scale', status: 'ONLINE', costPer1k: 0.0005 },
   { id: 'gpt-4o', provider: 'OpenAI', role: 'Creative & Code', status: 'ONLINE', costPer1k: 0.005, fallbackId: 'gemini-3-pro-preview' }
